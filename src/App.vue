@@ -20,6 +20,7 @@ header {
   padding: 1rem 2rem;
   width: 100%;
   background-color: orange;
+  z-index: 10;
 }
 
 .logo {

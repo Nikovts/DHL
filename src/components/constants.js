@@ -1,5 +1,7 @@
-export const info = {
-  plannedShippingDateAndTime: '2024-02-20T19:19:40 GMT+00:00',
+const date = new Date()
+date.setDate(date.getDate() + 1);
+export const details = {
+  plannedShippingDateAndTime: (date.toISOString().slice(0, -5))+' GMT+01:00',
   pickup: {
     isRequested: false
   },
@@ -98,7 +100,7 @@ export const info = {
     packages: [
       {
         typeCode: '2BP',
-        weight: 0.296,
+        weight: 1,
         dimensions: {
           length: 1,
           width: 1,
@@ -123,4 +125,3 @@ export const info = {
     }
   ]
 }
-export default info

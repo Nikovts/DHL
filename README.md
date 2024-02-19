@@ -1,6 +1,10 @@
 # dhl
 
-This template should help get you started developing with Vue 3 in Vite.
+This app allows users to submit shipment information to DHL Express for the purpose of creating a waybill.
+
+If you use localhost because of the CORS issue, instead of making requests directly to the DHL API, make requests through the CORS proxy server. The proxy server will add the necessary CORS headers to the responses, allowing your Vue application to access the data without encountering CORS errors. If you don`t want to set up a CORS Proxy Server, please replace the value "" of VITE_PROXY_URL in .ENV file with "https://cors-anywhere.herokuapp.com/". Also go to https://cors-anywhere.herokuapp.com/corsdemo to temporaly unlock access to the corsdemo.
+
+Please replace the value "" of VITE_API_KEY in .ENV file with your Api Key. This key you can get from here - https://developer.dhl.com/api-reference/dhl-express-mydhl-api#get-started-section
 
 ## Recommended IDE Setup
 

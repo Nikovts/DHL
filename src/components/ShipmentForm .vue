@@ -1,115 +1,136 @@
 <template>
-  <div class="form-container">
-    <div class="form-header">
-      <h2>Create shipment</h2>
-      <h4>To create a shipment, please fill in the required information in the fields below.</h4>
+  <div class="form-container" v-if="!loading">
+    <div v-if="!submit">
+      <div class="form-header">
+        <h2>Create waybill</h2>
+        <h4>To create a waybill, please fill in the required information in the fields below.</h4>
+      </div>
+      <form @submit.prevent="submitForm" class="form">
+        <!-- Shipper and Receiver Details -->
+        <div class="form-details">
+          <div
+            v-for="(customer, index) in Object.keys(shipmentDetails.customerDetails)"
+            :key="index"
+            class="form-details-column"
+          >
+            <h3>{{ convertCamelCase(customer) }}</h3>
+            <fieldset
+              v-for="(postalDetails, index) in Object.keys(
+                shipmentDetails.customerDetails[customer]
+              ).slice(0, 3)"
+              :key="index"
+              class="form-details-field"
+            >
+              <legend>{{ convertCamelCase(postalDetails) }}</legend>
+              <div v-if="Array.isArray(shipmentDetails.customerDetails[customer][postalDetails])">
+                <div
+                  class="input-details"
+                  v-for="(details, index) in Object.keys(
+                    shipmentDetails.customerDetails[customer][postalDetails][0]
+                  )"
+                  :key="index"
+                >
+                  <label for="postalCode">{{ convertCamelCase(details) }}:</label>
+                  <input
+                    type="text"
+                    id="postalCode"
+                    v-model="shipmentDetails.customerDetails[customer][postalDetails][0][details]"
+                    required
+                  />
+                </div>
+              </div>
+              <div v-else>
+                <div
+                  class="input-details"
+                  v-for="(details, index) in Object.keys(
+                    shipmentDetails.customerDetails[customer][postalDetails]
+                  )"
+                  :key="index"
+                >
+                  <label for="postalCode">{{ convertCamelCase(details) }}:</label>
+                  <input
+                    type="text"
+                    id="postalCode"
+                    v-model="shipmentDetails.customerDetails[customer][postalDetails][details]"
+                    required
+                  />
+                </div>
+              </div>
+            </fieldset>
+          </div>
+
+          <!-- Package details -->
+          <div class="form-details-column relative">
+            <h3>Package details</h3>
+            <fieldset class="form-details-field">
+              <legend>Content</legend>
+              <div class="input-details">
+                <label for="weight">Weight:</label>
+                <input
+                  type="number"
+                  id="weight"
+                  v-model="shipmentDetails.content.packages[0].weight"
+                  required
+                />
+              </div>
+
+              <div
+                v-for="(pack, index) in Object.keys(shipmentDetails.content.packages[0].dimensions)"
+                :key="index"
+                class="input-details"
+              >
+                <label for="weight">{{ convertCamelCase(pack) }}:</label>
+                <input
+                  type="number"
+                  id="weight"
+                  v-model="shipmentDetails.content.packages[0].dimensions[pack]"
+                  required
+                />
+              </div>
+            </fieldset>
+            <button type="submit" class="button-submit">Submit</button>
+          </div>
+        </div>
+      </form>
     </div>
 
-    <form @submit.prevent="submitForm" class="form" v-if="!submit" >
-      <!-- Shipper and Receiver Details -->
-      <div class="form-details">
-        <div
-          v-for="(customer, index) in Object.keys(customerDetails)"
-          :key="index"
-          class="form-details-column"
-        >
-          <h3>{{ convertCamelCase(customer) }}</h3>
-          <fieldset
-            v-for="(postalDetails, index) in Object.keys(customerDetails[customer]).slice(0, 3)"
-            :key="index"
-            class="form-details-field"
-          >
-            <legend>{{ convertCamelCase(postalDetails) }}</legend>
-            <div v-if="Array.isArray(customerDetails[customer][postalDetails])">
-              <div
-                class="input-details"
-                v-for="(details, index) in Object.keys(customerDetails[customer][postalDetails][0])"
-                :key="index"
-              >
-                <label for="postalCode">{{ convertCamelCase(details) }}:</label>
-                <input
-                  type="text"
-                  id="postalCode"
-                  v-model="customerDetails[customer][postalDetails][0][details]"
-                  required
-                />
-              </div>
-            </div>
-            <div v-else>
-              <div
-                class="input-details"
-                v-for="(details, index) in Object.keys(customerDetails[customer][postalDetails])"
-                :key="index"
-              >
-                <label for="postalCode">{{ convertCamelCase(details) }}:</label>
-                <input
-                  type="text"
-                  id="postalCode"
-                  v-model="customerDetails[customer][postalDetails][details]"
-                  required
-                />
-              </div>
-            </div>
-          </fieldset>
-        </div>
-
-        <!-- Package details -->
-        <div class="form-details-column relative">
-          <h3>Package details</h3>
-          <fieldset class="form-details-field">
-            <legend>Content</legend>
-            <div class="input-details">
-              <label for="weight">Weight:</label>
-              <input type="number" id="weight" v-model="content.packages[0].weight" required />
-            </div>
-
-            <div
-              v-for="(pack, index) in Object.keys(content.packages[0].dimensions)"
-              :key="index"
-              class="input-details"
-            >
-              <label for="weight">{{ convertCamelCase(pack) }}:</label>
-              <input
-                type="number"
-                id="weight"
-                v-model="content.packages[0].dimensions[pack]"
-                required
-              />
-            </div>
-          </fieldset>
-          <button type="submit" class="form-submit">Submit</button>
-        </div>
+    <div v-else>
+      <div class="pdf-header">
+        <h2>Shipment Tracking Number: {{ shipment.shipmentTrackingNumber }}</h2>
+        <button class="button-new" @click="newWaybill">New waybill</button>
       </div>
-    </form>
-    <PDF :pdfData=pdfData v-else/>
+      <WayBill :pdfData="shipment.documents[1]?.content" />
+    </div>
   </div>
+  <div class="loader" v-else></div>
 </template>
 
 <script setup>
 import { ref } from 'vue'
-import info from '../components/constants.js'
-import PDF from './PDF.vue';
+import { details } from '../components/constants.js'
+import WayBill from './WayBill.vue'
+import { createShipment } from '../api/api'
 
-// If you need to modify the props, you can create local refs for them
-const customerDetails = ref(info.customerDetails)
-const content = ref(info.content)
-const pdfData = ref('')
+const shipmentDetails = ref(structuredClone(details))
+const shipment = ref({})
 const submit = ref(false)
-const options = {
-  method: 'POST',
-  headers: {
-    'content-type': 'application/json',
-    Authorization: 'Basic Y2xvdWRjYXJ0Qkc6SF4yckgjOWxSJDNpRV42eQ=='
-  },
+const loading = ref(false)
+const newWaybill = () => {
+  shipmentDetails.value = structuredClone(details)
+  submit.value = false
 }
-const corsAnywhereUrl = 'https://cors-anywhere.herokuapp.com/';
-const dhlApiUrl = 'https://express.api.dhl.com/mydhlapi/test/shipments';
-const submitForm = () => {
-  options.body = JSON.stringify(info)
-  fetch(corsAnywhereUrl + dhlApiUrl, options)
-    .then((response) => response.json())
-    .then((response) =>  {pdfData.value =response.documents[1].content, submit.value=true, console.log(typeof response.documents[0].content)})
-    .catch((err) => {alert(err),console.error(err)})
+const submitForm = async () => {
+  loading.value = true
+  try {
+    const response = await createShipment(shipmentDetails.value)
+
+    shipment.value = response
+    submit.value = true
+  } catch (error) {
+    alert(error)
+  } finally {
+    loading.value = false
+  }
 }
 
 const convertCamelCase = (key) => {
@@ -125,6 +146,12 @@ const convertCamelCase = (key) => {
 }
 .form-header {
   margin: 2rem 0;
+}
+
+.pdf-header {
+  margin: 2rem 0;
+  display: flex;
+  justify-content: space-between;
 }
 .form {
   margin-top: 3rem;
@@ -149,12 +176,36 @@ const convertCamelCase = (key) => {
   display: flex;
   justify-content: space-between;
 }
-.form-submit {
+.button-submit {
   position: absolute;
   bottom: 0;
   right: 0;
   width: 5rem;
   height: 2rem;
   background-color: orange;
+  cursor: pointer;
+}
+
+.button-new {
+  background-color: orange;
+  cursor: pointer;
+}
+.loader {
+  margin: 15rem auto 0 auto;
+  border: 16px solid #f3f3f3;
+  border-top: 16px solid #3498db;
+  border-radius: 50%;
+  width: 120px;
+  height: 120px;
+  animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 </style>

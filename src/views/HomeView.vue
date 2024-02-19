@@ -1,5 +1,5 @@
 <script setup>
-import ShipmentForm  from '../components/ShipmentForm .vue'
+import ShipmentForm from '../components/ShipmentForm .vue'
 </script>
 
 <template>
